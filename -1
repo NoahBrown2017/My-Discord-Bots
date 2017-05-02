@@ -1,0 +1,130 @@
+#include <iostream>
+#include <cassert>
+
+template<typename T, int nrows, int ncols>
+class StackMatrix
+{
+public:
+    StackMatrix()
+    {
+        static_assert(ncols != 0);
+        static_assert(nrows != 0);
+    }
+
+    StackMatrix(StackMatrix<T, nrows, ncols> const & other)
+    {
+        for (int i = 0; i < nrows; ++i)
+        {
+            for (int j = 0; j < ncols; ++j)
+            {
+                data[i + j * nrows] = other.get(i, j);
+            }
+        }
+    }
+
+    int getColumns()
+    {
+        return ncols;
+    }
+
+    int getRows()
+    {
+        return nrows;
+    }
+
+    T const & get(int i, int j) const 
+    { 
+        return data[i + j * nrows]; 
+    }
+
+    T & get(int i, int j) 
+    {
+        return data[i + j * nrows];
+    }
+    
+    void set(int i, int j, T v)
+    {
+        data[i + j * nrows] = v; 
+    }
+    
+template<int n>
+friend StackMatrix<T, nrows, n> operator*(StackMatrix<T, nrows, ncols> const & a, StackMatrix<T, ncols, n> const & b)
+{
+    StackMatrix<T, nrows, n> ret;
+    
+    for(int i = 0; i < nrows; ++i)
+    {
+        for(int j = 0; j < n; ++j)
+        {
+            ret.set(i, j, 0);
+            for(int k = 0; k < ncols; k++)
+            {
+                //::cout << a.get(i, k) << '*' << b.get(k, j) << '+';
+                ret.set(i, j, ret.get(i, j) + (a.get(i, k) * b.get(k, j)));
+            }
+            //std::cout << '\n';
+        }
+    }
+    
+    return ret;
+}
+
+private:
+    T data[nrows * ncols];
+    
+};
+
+
+ 
+int main()
+{    
+    StackMatrix<int, 2, 3> a;
+    a.set(0, 0, 1);
+    a.set(0, 1, 2);
+    a.set(0, 2, 3);
+    a.set(1, 0, 4);
+    a.set(1, 1, 5);
+    a.set(1, 2, 6);
+    
+    std::cout << "== a ==\n";
+    for(int i = 0; i < 2; ++i)
+    {
+        for(int j = 0; j < 3; ++j)
+        {
+            std::cout << a.get(i, j) << ' ';
+        }   
+        std::cout << '\n';
+    }
+    
+    StackMatrix<int, 3, 2> b;
+    b.set(0, 0, 7);
+    b.set(0, 1, 8);
+    b.set(1, 0, 9);
+    b.set(1, 1, 10);
+    b.set(2, 0, 11);
+    b.set(2, 1, 12);
+    
+    std::cout << "== b ==\n";
+    for(int i = 0; i < 3; ++i)
+    {
+        for(int j = 0; j < 2; ++j)
+        {
+            std::cout << b.get(i, j) << ' ';
+        }   
+        std::cout << '\n';
+    }
+    
+    StackMatrix<int, 2, 2> c = (a * b);
+    
+    std::cout << "== c ==\n";
+    for(int i = 0; i < 2; ++i)
+    {
+        for(int j = 0; j < 2; ++j)
+        {
+            std::cout << c.get(i, j) << ' ';
+        }   
+        std::cout << '\n';
+    }
+    
+    return 0;
+}
